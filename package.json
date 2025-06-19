@@ -1,0 +1,35 @@
+{
+  "name": "mesto-project-ff",
+  "version": "1.0.0",
+  "description": "https://github.com/kristinakpl/mesto-project-ff.git",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kristinakpl/mesto-project-ff.git"
+  },
+  "author": "Kristina Kudryavseva",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kristinakpl/mesto-project-ff/issues"
+  },
+  "homepage": "https://github.com/kristinakpl/mesto-project-ff#readme",
+  "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "mini-css-extract-plugin": "^2.9.2",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.1"
+  },
+  "dependencies": {
+    "clean-webpack-plugin": "^4.0.0",
+    "core-js": "^3.42.0",
+    "html-webpack-plugin": "^5.6.3"
+  }
+}
