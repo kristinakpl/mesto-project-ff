@@ -36,12 +36,14 @@ function handleOpenImage(src, alt) {
 
 // Установка обработчиков событий для модальных окон
 document.querySelectorAll('.popup').forEach(popup => {
+  // Закрытие по оверлею
   popup.addEventListener('click', handleOverlayClick);
-});
-
-document.querySelectorAll('.popup__close').forEach(button => {
-  const popup = button.closest('.popup');
-  handleCloseButtonClick(button, popup);
+  
+// Закрытие по крестику (находим кнопку внутри)
+  const closeBtn = popup.querySelector('.popup__close');
+  if (closeBtn) {
+    handleCloseButtonClick(closeBtn, popup);
+  }
 });
 
 // Редактирование профиля
