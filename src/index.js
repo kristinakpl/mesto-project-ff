@@ -2,6 +2,7 @@ import './pages/index.css'; // добавьте импорт главного ф
 import { initialCards } from './components/cards.js';
 import { createCard, handleCardDelete, handleLikeCard } from './components/card.js';
 import { openModal, closeModal, handleOverlayClick, handleCloseButtonClick } from './components/modal.js';
+import { enableValidation, clearValidation } from './components/validation.js';
 
 // Получаем элементы страницы
 const placesList = document.querySelector('.places__list');
@@ -25,6 +26,19 @@ const popupImage = document.querySelector('.popup_type_image');
 
 const popupImageElement = document.querySelector('.popup__image');
 const popupCaption = document.querySelector('.popup__caption');
+
+// Настройки валидации форм
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+};
+
+// Включаем валидацию
+enableValidation(validationConfig);
 
 // Плавное открытие изображения
 function handleOpenImage(src, alt) {
@@ -60,7 +74,13 @@ function openEditPopup() {
   openModal(popupEdit);
 }
 
-editButton.addEventListener('click', openEditPopup);
+// Заменяем старый addEventListener на новый с очисткой ошибок
+editButton.addEventListener('click', () => {
+  openEditPopup();
+  clearValidation(formEditProfile, validationConfig); // Очистка ошибок при открытии
+});
+
+// Эту строку оставляем — она нужна для обработки отправки формы
 formEditProfile.addEventListener('submit', handleEditFormSubmit);
 
 // Добавление новой карточки
@@ -74,10 +94,12 @@ function handleAddFormSubmit(evt) {
   placesList.prepend(cardElement);
   closeModal(popupAdd);
   formAddCard.reset();
+  clearValidation(formAddCard, validationConfig);
 }
 
 addButton.addEventListener('click', () => {
   formAddCard.reset();
+  clearValidation(formAddCard, validationConfig);
   openModal(popupAdd);
 });
 

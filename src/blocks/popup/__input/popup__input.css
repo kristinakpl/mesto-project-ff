@@ -20,3 +20,7 @@
     line-height: 15px;
   }
 }
+
+.popup__input::placeholder {
+  color: #C4C4C4;
+}

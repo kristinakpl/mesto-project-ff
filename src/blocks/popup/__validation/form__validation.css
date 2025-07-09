@@ -1,0 +1,13 @@
+.popup__error_visible {
+  display: block;
+  color: red;
+}
+
+.popup__input_type_error {
+  border-color: red;
+}
+
+.popup__button_disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
