@@ -17,3 +17,15 @@
     padding: 30px 20px;
   }
 }
+
+.popup_type_confirm-delete .popup__content {
+  max-width: 430px;
+  width: 100%;
+  min-height: 181px;
+}
+
+.popup_type_update-avatar .popup__content {
+  max-width: 430px;
+  width: 100%;
+  min-height: 272px;
+}

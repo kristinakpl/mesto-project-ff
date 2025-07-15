@@ -1,8 +1,12 @@
-// validation.js
-
 const nameRegex = /^[а-яА-ЯёЁa-zA-Z\- ]{2,40}$/; // для profile-name
 const aboutRegex = /^[а-яА-ЯёЁa-zA-Z\- ]{2,200}$/; // для description
 const linkRegex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$/; // для card-link
+
+// Функция проверяет, является ли ссылка прямой ссылкой на изображение
+export function validateImageURL(url) {
+  const validExtensions = /\.(jpeg|jpg|png|webp|gif)$/i;
+  return validExtensions.test(url);
+}
 
 function validateInput(inputElement, config) {
   const errorMessageElement = document.querySelector(`.${inputElement.id}-error`);
@@ -31,6 +35,10 @@ function validateInput(inputElement, config) {
     if (!linkRegex.test(inputElement.value)) {
       errorMessageElement.textContent = 'Введите адрес сайта';
       inputElement.setCustomValidity('Введите корректный URL');
+    } else if (!validateImageURL(inputElement.value)) {
+      //проверка на изображение
+      errorMessageElement.textContent = 'Введите прямую ссылку на изображение (.jpg, .png, .webp)';
+      inputElement.setCustomValidity('Введите прямую ссылку на изображение (.jpg, .png, .webp)');
     } else {
       errorMessageElement.textContent = '';
       inputElement.setCustomValidity('');
@@ -43,10 +51,10 @@ function validateInput(inputElement, config) {
     inputElement.setCustomValidity('Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы');
   } else if (inputElement.id === 'profile-name' && inputElement.value.length > 40) {
     errorMessageElement.textContent = 'Длина имени должна быть не более 40 символов';
-    inputElement.setCustomValidity('Длина имени должна быть не более 40 символов');
+    inputElement.setCustomValidity('Длина описания должна быть не более 40 символов');
   } else if (inputElement.id === 'description' && inputElement.value.length > 200) {
     errorMessageElement.textContent = 'Длина описания должна быть не более 200 символов';
-    inputElement.setCustomValidity('Длина имени должна быть не более 40 символов');
+    inputElement.setCustomValidity('Длина описания должна быть не более 40 символов');
   } else {
     errorMessageElement.textContent = '';
     inputElement.setCustomValidity('');

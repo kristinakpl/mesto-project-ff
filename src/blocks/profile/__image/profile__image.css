@@ -1,3 +1,11 @@
+.profile__image-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
 .profile__image {
   width: 120px;
   height: 120px;
@@ -7,6 +15,25 @@
   background-size: cover;
   background-position: center;
   margin: 0 29px 0 0;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Затемнение фона аватара при наведении */
+.profile__image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8); /* затемнение */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
 }
 
 @media screen and (max-width: 740px) {
@@ -19,4 +46,33 @@
   .profile__image {
     margin-right: 0;
   }
+}
+
+.profile__edit-avatar-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  background-image: url('../../../images/edit-icon.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  border: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+  cursor: pointer;
+}
+
+/* Показываем затемнение при наведении */
+.profile__image-container:hover .profile__image::after {
+  opacity: 1;
+}
+
+/* Показываем кнопку при наведении на аватар */
+.profile__image-container:hover .profile__edit-avatar-button,
+.profile__image-container:focus-within .profile__edit-avatar-button {
+  opacity: 1;
 }
