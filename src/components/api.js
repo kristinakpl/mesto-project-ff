@@ -23,12 +23,10 @@ function request(endpoint, options) {
         return res.json();
       }
 
-      return Promise.reject(new Error(`Ошибка: ${res.status}`));
-    })
-    .catch(err => {
-      console.error('[API] Произошла ошибка:', err.message);
-      return Promise.reject(err);
-    });
+      const error = new Error(`Ошибка HTTP: ${res.status}`);
+    error.response = res;
+    return Promise.reject(error);
+  });
 }
 
 // === Запросы к серверу ===

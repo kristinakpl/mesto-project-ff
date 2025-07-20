@@ -1,9 +1,8 @@
 import './pages/index.css'; // добавьте импорт главного файла стилей 
 /*import { initialCards } from './components/cards.js';*/
-import { createCard, handleLikeCard } from './components/card.js';
-import handleCardDelete from './components/card.js';
+import { createCard } from './components/card.js';
 import { openModal, closeModal, handleOverlayClick, handleCloseButtonClick } from './components/modal.js';
-import { enableValidation, clearValidation, validateImageURL} from './components/validation.js';
+import { enableValidation, clearValidation, validationConfig, validateImageURL} from './components/validation.js';
 import {
   fetchUserInfo,
   getInitialCards,
@@ -16,7 +15,6 @@ import {
 } from './components/api.js';
 
 let currentUser = {};
-let currentCardForDeletion = null; // хранит текущую карточку, которую удаляют
 let deletionContext = {
   currentCard: null // здесь будет храниться текущая карточка для удаления
 };
@@ -50,6 +48,42 @@ const popupConfirm = document.querySelector('.popup_type_confirm-delete'); // П
 const popupImageElement = document.querySelector('.popup__image');
 const popupCaption = document.querySelector('.popup__caption');
 
+// === Функция для удаления карточки (в index.js) ===
+export function handleCardDelete(cardElement, cardId, openModalFunc, popupConfirmRef, deletionContext) {
+  // Сохраняем текущую карточку во внешнем контексте
+  deletionContext.currentCard = { cardElement, cardId };
+
+  // Открываем попап подтверждения удаления
+  openModalFunc(popupConfirmRef);
+}
+
+// === Обработчик лайка (в index.js) ===
+export function handleLikeCard(cardElement, cardId, likeButton, likeCounter) {
+  const isLiked = likeButton.classList.contains('card__like-button_is-active');
+
+  if (isLiked) {
+    // Убираем лайк
+    unlikeCard(cardId)
+      .then(data => {
+        likeButton.classList.remove('card__like-button_is-active');
+        likeCounter.textContent = data.likes.length;
+      })
+      .catch(err => {
+        console.error('Ошибка при снятии лайка:', err);
+      });
+  } else {
+    // Ставим лайк
+    likeCard(cardId)
+      .then(data => {
+        likeButton.classList.add('card__like-button_is-active');
+        likeCounter.textContent = data.likes.length;
+      })
+      .catch(err => {
+        console.error('Ошибка при установке лайка:', err);
+      });
+  }
+}
+
 // === Получаем данные пользователя и сохраняем в currentUser ===
 fetchUserInfo()
   .then(userData => {
@@ -57,6 +91,7 @@ fetchUserInfo()
     profileTitle.textContent = userData.name;
     profileDescription.textContent = userData.about;
     profileImage.style.backgroundImage = `url(${userData.avatar})`;
+    closeModal(popupEdit);
   })
   .catch(err => {
     console.error('Не удалось загрузить данные пользователя:', err);
@@ -77,36 +112,33 @@ if (popupConfirm) {
   const formConfirm = popupConfirm.querySelector('.popup__form[name="confirm-delete"]');
   if (formConfirm) {
     formConfirm.addEventListener('submit', function (evt) {
-      evt.preventDefault();
+  evt.preventDefault();
+  if (deletionContext.currentCard) {
+    const { cardElement, cardId } = deletionContext.currentCard;
+    const submitButton = formConfirm.querySelector('.popup__button');
+    const originalText = submitButton.textContent;
+    submitButton.textContent = 'Удаление...';
+    submitButton.disabled = true;
 
-      if (deletionContext.currentCard) {
-        const { cardElement, cardId } = deletionContext.currentCard;
-
-        deleteCard(cardId)
-          .then(() => {
-            cardElement.remove();
-          })
-          .catch(err => {
-            console.error('Не удалось удалить карточку:', err);
-          })
-          .finally(() => {
-            closeModal(popupConfirm);
-            deletionContext.currentCard = null;
-          });
-      }
-    });
+    deleteCard(cardId)
+      .then(() => {
+        cardElement.remove();
+        closeModal(popupConfirm);
+        deletionContext.currentCard = null; // обнуляем только при успехе
+      })
+      .catch(err => {
+        console.error('Не удалось удалить карточку:', err);
+        // Пользователь сам решает, закрывать попап или нет
+        alert('Ошибка при удалении карточки. Попробуйте ещё раз.');
+      })
+      .finally(() => {
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+      });
+  }
+});
   }
 }
-
-// Настройки валидации форм
-const validationConfig = {
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
-  inactiveButtonClass: 'popup__button_disabled',
-  inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__error_visible'
-};
 
 // Плавное открытие изображения
 function handleOpenImage(src, alt) {
@@ -150,12 +182,14 @@ function handleEditFormSubmit(evt) {
       closeModal(popupEdit);
     })
     .catch(err => {
-      console.error('Не удалось обновить профиль:', err);
-    })
-    .finally(() => {
-      // Восстанавливаем текст и состояние кнопки
-      submitButton.textContent = originalText;
-      submitButton.disabled = false;
+    console.error('Не удалось обновить профиль:', err);
+    alert('Не удалось сохранить изменения. Попробуйте позже.');
+  })
+  .finally(() => {
+    // Восстанавливаем текст кнопки
+    const submitButton = formEditProfile.querySelector('.popup__button');
+    submitButton.textContent = 'Сохранить';
+    submitButton.disabled = false;
     });
 }
 
@@ -177,13 +211,6 @@ formEditProfile.addEventListener('submit', handleEditFormSubmit);
 function handleAddFormSubmit(evt) {
   evt.preventDefault();
 
-  // Проверяем, корректна ли ссылка
-  if (!validateImageURL(cardLinkInput.value)) {
-    cardLinkInput.setCustomValidity('Введите прямую ссылку на изображение (.jpg, .png, .webp)');
-    cardLinkInput.reportValidity();
-    return;
-  }
-
   const submitButton = formAddCard.querySelector('.popup__button');
   const originalText = submitButton.textContent;
 
@@ -197,13 +224,14 @@ function handleAddFormSubmit(evt) {
   };
 
   addCard(cardData)
-    .then(newCard => {
-      const cardElement = createCard(
-        newCard,
-        () => handleCardDelete(cardElement, newCard._id),
-        () => handleLikeCard(cardElement, newCard._id, newCard.likes.length),
-        handleOpenImage
-      );
+  .then(newCard => {
+    const cardElement = createCard(
+      newCard,
+      (cardElement, cardId) => handleCardDelete(cardElement, cardId, openModal, popupConfirm, deletionContext),
+      (cardElement, cardId, likeButton, likeCounter) => handleLikeCard(cardElement, cardId, likeButton, likeCounter),
+      handleOpenImage,
+      currentUser
+    );
       placesList.prepend(cardElement);
       closeModal(popupAdd);
       formAddCard.reset();
@@ -280,6 +308,7 @@ initialCards.forEach(function (item) {
 // === Загрузка данных при старте ===
 Promise.all([fetchUserInfo(), getInitialCards()])
   .then(([userData, cards]) => {
+    currentUser = userData;
     // Заполняем профиль
     profileTitle.textContent = userData.name;
     profileDescription.textContent = userData.about;
@@ -289,8 +318,8 @@ Promise.all([fetchUserInfo(), getInitialCards()])
     cards.forEach(card => {
   const cardElement = createCard(
     card,
-    () => handleCardDelete(cardElement, card._id, openModal, popupConfirm, deletionContext),
-    () => handleLikeCard(cardElement, card._id, card.likes.length),
+    (cardElement, cardId) => handleCardDelete(cardElement, cardId, openModal, popupConfirm, deletionContext),
+    (cardElement, cardId, likeButton, likeCounter) => handleLikeCard(cardElement, cardId, likeButton, likeCounter),
     handleOpenImage,
     currentUser
   );

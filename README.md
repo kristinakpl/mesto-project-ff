@@ -2,6 +2,7 @@
 
 Ссылки:
 - Репозиторий проекта: https://github.com/kristinakpl/mesto-project-ff.git
+- Ссылка на страницу: https://kristinakpl.github.io/mesto-project-ff/
 
 
 

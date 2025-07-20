@@ -40,7 +40,7 @@
     <div class="popup__content">
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Редактировать профиль</h3>
-      <form class="popup__form" name="edit-profile">
+      <form class="popup__form" name="edit-profile" novalidate>
         <input id="profile-name" type="text" name="name" class="popup__input popup__input_type_name" placeholder="Имя" required minlength="2" maxlength="40" data-error-message="Вы пропустили это поле.">
         <span class="popup__error profile-name-error"></span>
         <input id="description" type="text" name="description" class="popup__input popup__input_type_description" placeholder="О себе" required minlength="2" maxlength="200" data-error-message="Вы пропустили это поле.">
@@ -53,8 +53,8 @@
     <div class="popup__content">
       <button type="button" class="popup__close"></button>
       <h3 class="popup__title">Новое место</h3>
-      <form class="popup__form" name="new-place">
-        <input id="card-name" type="text" name="place-name" class="popup__input popup__input_type_card-name" placeholder="Название" required minlength="2" maxlength="30" data-error-message="Вы пропустили это поле.">
+      <form class="popup__form" name="new-place" novalidate>
+        <input id="card-name" type="text" name="cardName" class="popup__input popup__input_type_card-name" placeholder="Название" required minlength="2" maxlength="30" data-error-message="Вы пропустили это поле.">
         <span class="popup__error card-name-error"></span>
         <input id="card-link" type="url" name="link" class="popup__input popup__input_type_url" placeholder="Ссылка на картинку" required data-error-message="Введите адрес сайта.">
         <span class="popup__error card-link-error"></span>
@@ -73,7 +73,7 @@
   <div class="popup__content">
     <button type="button" class="popup__close"></button>
     <h3 class="popup__title">Вы уверены?</h3>
-    <form class="popup__form" name="confirm-delete">
+    <form class="popup__form" name="confirm-delete" novalidate>
       <button type="submit" class="button popup__button popup__button_disabled">Да</button>
     </form>
   </div>
@@ -83,7 +83,7 @@
   <div class="popup__content">
     <button type="button" class="popup__close"></button>
     <h3 class="popup__title">Обновить аватар</h3>
-    <form class="popup__form" name="update-avatar">
+    <form class="popup__form" name="update-avatar" novalidate>
       <input id="avatar-link" type="url" name="avatar"
              class="popup__input popup__input_type_avatar"
              placeholder="Ссылка на новый аватар" required />

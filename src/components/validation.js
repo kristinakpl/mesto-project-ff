@@ -1,77 +1,81 @@
-const nameRegex = /^[а-яА-ЯёЁa-zA-Z\- ]{2,40}$/; // для profile-name
-const aboutRegex = /^[а-яА-ЯёЁa-zA-Z\- ]{2,200}$/; // для description
-const linkRegex = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$/; // для card-link
 
-// Функция проверяет, является ли ссылка прямой ссылкой на изображение
+// === Функция проверяет, является ли ссылка прямой ссылкой на изображение ===
 export function validateImageURL(url) {
   const validExtensions = /\.(jpeg|jpg|png|webp|gif)$/i;
   return validExtensions.test(url);
 }
 
+// === Обновлённая функция валидации полей ===
 function validateInput(inputElement, config) {
-  const errorMessageElement = document.querySelector(`.${inputElement.id}-error`);
+  const { validators, minLength, maxLength, inputErrorClass, errorClass } = config;
+  const errorElement = document.querySelector(`.${inputElement.id}-error`);
 
-  // Всегда проверяем значение, даже если оно "валидно" с точки зрения браузера
-  if (inputElement.value.length === 0) {
-    errorMessageElement.textContent = inputElement.dataset.errorMessage || 'Вы пропустили это поле.';
-    inputElement.setCustomValidity('Вы пропустили это поле.');
-  } else if (inputElement.id === 'card-name') {
-    // Проверка длины только для поля "Название"
-    if (inputElement.value.length < 2) {
-      const currentLength = inputElement.value.length;
-      errorMessageElement.textContent = `Минимальное количество символов: 2. Длина текста сейчас: ${currentLength} символ${currentLength !== 1 ? 'а' : ''}.`;
-      inputElement.setCustomValidity('Минимальное количество символов: 2.');
-    } else if (inputElement.value.length > 30) {
-      errorMessageElement.textContent = 'Длина названия должна быть не более 30 символов';
-      inputElement.setCustomValidity('Длина названия должна быть не более 30 символов');
-    } else if (!nameRegex.test(inputElement.value)) {
-      errorMessageElement.textContent = 'Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы';
-      inputElement.setCustomValidity('Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы');
-    } else {
-      errorMessageElement.textContent = '';
-      inputElement.setCustomValidity('');
+  let errorMessage = '';
+  const inputValue = inputElement.value.trim();
+  const inputName = inputElement.getAttribute('name');
+
+  // === 1. Проверка на пустое поле ===
+  if (!inputValue) {
+    errorMessage = inputElement.dataset.errorMessage || 'Вы пропустили это поле.';
+  }
+
+  // === 2. Проверка минимальной длины ===
+  else if (minLength[inputName] && inputValue.length < minLength[inputName]) {
+    errorMessage = `Минимальное количество символов: ${minLength[inputName]}. Сейчас: ${inputValue.length}`;
+  }
+
+  // === 3. Проверка максимальной длины ===
+  else if (maxLength[inputName] && inputValue.length > maxLength[inputName]) {
+    errorMessage = `Максимальное количество символов: ${maxLength[inputName]}`;
+  }
+
+  // === 4. Проверка по регулярке или кастомной функции ===
+  else if (validators[inputName]) {
+    const validator = validators[inputName];
+
+    if (validator.regex && !validator.regex.test(inputValue)) {
+      errorMessage = validator.error;
+    } else if (validator.validator && !validator.validator(inputValue)) {
+      errorMessage = validator.error;
     }
-  } else if (inputElement.id === 'card-link') {
-    if (!linkRegex.test(inputElement.value)) {
-      errorMessageElement.textContent = 'Введите адрес сайта';
-      inputElement.setCustomValidity('Введите корректный URL');
-    } else if (!validateImageURL(inputElement.value)) {
-      //проверка на изображение
-      errorMessageElement.textContent = 'Введите прямую ссылку на изображение (.jpg, .png, .webp)';
-      inputElement.setCustomValidity('Введите прямую ссылку на изображение (.jpg, .png, .webp)');
-    } else {
-      errorMessageElement.textContent = '';
-      inputElement.setCustomValidity('');
-    }
-  } else if (inputElement.id === 'profile-name' && !nameRegex.test(inputElement.value)) {
-    errorMessageElement.textContent = 'Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы';
-    inputElement.setCustomValidity('Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы');
-  } else if (inputElement.id === 'description' && !aboutRegex.test(inputElement.value)) {
-    errorMessageElement.textContent = 'Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы';
-    inputElement.setCustomValidity('Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы');
-  } else if (inputElement.id === 'profile-name' && inputElement.value.length > 40) {
-    errorMessageElement.textContent = 'Длина имени должна быть не более 40 символов';
-    inputElement.setCustomValidity('Длина описания должна быть не более 40 символов');
-  } else if (inputElement.id === 'description' && inputElement.value.length > 200) {
-    errorMessageElement.textContent = 'Длина описания должна быть не более 200 символов';
-    inputElement.setCustomValidity('Длина описания должна быть не более 40 символов');
-  } else {
-    errorMessageElement.textContent = '';
+  }
+
+  // === 5. Если всё ок, очищаем ошибку ===
+  if (!errorMessage) {
     inputElement.setCustomValidity('');
+  } else {
+    inputElement.setCustomValidity(errorMessage);
   }
 
-  // Обновляем стили ошибок
-  if (errorMessageElement.textContent) {
-    inputElement.classList.add(config.inputErrorClass);
-    errorMessageElement.classList.add(config.errorClass);
-  } else {
-    inputElement.classList.remove(config.inputErrorClass);
-    errorMessageElement.classList.remove(config.errorClass);
-  }
+  // === Обновляем интерфейс ошибок ===
+  errorElement.textContent = errorMessage;
+  inputElement.classList.toggle(inputErrorClass, !!errorMessage);
+  errorElement.classList.toggle(errorClass, !!errorMessage);
 }
 
-function toggleButtonValidity(formElement, buttonSelector, inactiveButtonClass) {
-  const buttonElement = formElement.querySelector(buttonSelector);
+// === Включаем валидацию для всех форм ===
+export function enableValidation(config) {
+  const forms = document.querySelectorAll(config.formSelector);
+
+  forms.forEach((formElement) => {
+    const inputs = Array.from(formElement.querySelectorAll(config.inputSelector));
+    const submitButton = formElement.querySelector(config.submitButtonSelector);
+
+    function handleInput() {
+      inputs.forEach(input => validateInput(input, config));
+      toggleButtonValidity(formElement, submitButton, config.inactiveButtonClass);
+    }
+
+    inputs.forEach(input => {
+      input.addEventListener('input', handleInput);
+    });
+
+    toggleButtonValidity(formElement, submitButton, config.inactiveButtonClass);
+  });
+}
+
+// === Функция переключает состояние кнопки отправки ===
+function toggleButtonValidity(formElement, buttonElement, inactiveButtonClass) {
   const inputs = Array.from(formElement.querySelectorAll('.popup__input'));
   const isFormValid = inputs.every((input) => input.checkValidity());
 
@@ -84,38 +88,57 @@ function toggleButtonValidity(formElement, buttonSelector, inactiveButtonClass) 
   }
 }
 
-export function enableValidation(config) {
-  const forms = document.querySelectorAll(config.formSelector);
-
-  forms.forEach((formElement) => {
-    formElement.addEventListener('submit', (event) => {
-      event.preventDefault();
-    });
-
-    const inputs = Array.from(formElement.querySelectorAll(config.inputSelector));
-
-    inputs.forEach((inputElement) => {
-      inputElement.addEventListener('input', () => {
-        validateInput(inputElement, config);
-        toggleButtonValidity(formElement, config.submitButtonSelector, config.inactiveButtonClass);
-      });
-    });
-
-    toggleButtonValidity(formElement, config.submitButtonSelector, config.inactiveButtonClass);
-  });
-}
-
+// === Функция очищает ошибки валидации ===
 export function clearValidation(formElement, config) {
   const inputs = Array.from(formElement.querySelectorAll(config.inputSelector));
-  const buttonElement = formElement.querySelector(config.submitButtonSelector);
+  const button = formElement.querySelector(config.submitButtonSelector);
 
-  inputs.forEach((inputElement) => {
-    const errorMessageElement = document.querySelector(`.${inputElement.id}-error`);
-    inputElement.classList.remove(config.inputErrorClass);
-    errorMessageElement.classList.remove(config.errorClass);
-    errorMessageElement.textContent = '';
+  inputs.forEach(input => {
+    const errorElement = document.querySelector(`.${input.id}-error`);
+    input.classList.remove(config.inputErrorClass);
+    errorElement.classList.remove(config.errorClass);
+    errorElement.textContent = '';
+    input.setCustomValidity('');
   });
 
-  buttonElement.classList.add(config.inactiveButtonClass);
-  buttonElement.disabled = true;
+  button.classList.add(config.inactiveButtonClass);
+  button.disabled = true;
 }
+
+// === Конфигурация для валидации ===
+export const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible',
+  validators: {
+    name: {
+      regex: /^[а-яА-ЯёЁa-zA-Z\- ]{2,40}$/i,
+      error: 'Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы'
+    },
+    description: {
+      regex: /^[а-яА-ЯёЁa-zA-Z\- ]{2,200}$/i,
+      error: 'Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы'
+    },
+    url: {
+      regex: /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_+.~#?&/=]*)$/i,
+      error: 'Введите корректный URL'
+    },
+    image: {
+      validator: validateImageURL,
+      error: 'Введите прямую ссылку на изображение (.jpg, .png, .webp)'
+    }
+  },
+  minLength: {
+    name: 2,
+    description: 2,
+    cardName: 2
+  },
+  maxLength: {
+    name: 40,
+    description: 200,
+    cardName: 30
+  }
+};
