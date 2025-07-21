@@ -2,7 +2,7 @@ import './pages/index.css'; // добавьте импорт главного ф
 /*import { initialCards } from './components/cards.js';*/
 import { createCard } from './components/card.js';
 import { openModal, closeModal, handleOverlayClick, handleCloseButtonClick } from './components/modal.js';
-import { enableValidation, clearValidation, validationConfig, validateImageURL} from './components/validation.js';
+import { enableValidation, clearValidation, validateImageURL} from './components/validation.js';
 import {
   fetchUserInfo,
   getInitialCards,
@@ -13,6 +13,16 @@ import {
   unlikeCard,
   updateAvatar
 } from './components/api.js';
+
+// === Конфигурация валидации форм ===
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+};
 
 let currentUser = {};
 let deletionContext = {
@@ -239,13 +249,6 @@ function handleAvatarFormSubmit(evt) {
 
   const submitButton = formUpdateAvatar.querySelector('.popup__button');
   const originalText = submitButton.textContent;
-
-  // Проверяем, корректна ли ссылка
-  if (!validateImageURL(avatarInput.value)) {
-    avatarInput.setCustomValidity('Введите прямую ссылку на изображение (.jpg, .png, .webp)');
-    avatarInput.reportValidity();
-    return;
-  }
 
   // Меняем текст кнопки и делаем её неактивной
   submitButton.textContent = 'Сохранение...';
