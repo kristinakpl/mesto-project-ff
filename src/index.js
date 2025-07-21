@@ -84,19 +84,6 @@ export function handleLikeCard(cardElement, cardId, likeButton, likeCounter) {
   }
 }
 
-// === Получаем данные пользователя и сохраняем в currentUser ===
-fetchUserInfo()
-  .then(userData => {
-    currentUser = userData;
-    profileTitle.textContent = userData.name;
-    profileDescription.textContent = userData.about;
-    profileImage.style.backgroundImage = `url(${userData.avatar})`;
-    closeModal(popupEdit);
-  })
-  .catch(err => {
-    console.error('Не удалось загрузить данные пользователя:', err);
-  });
-
   // === Закрытие попапа подтверждения удаления ===
 if (popupConfirm) {
   popupConfirm.addEventListener('click', handleOverlayClick);
